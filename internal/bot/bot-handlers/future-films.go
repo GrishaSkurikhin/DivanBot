@@ -5,10 +5,9 @@ import (
 
 	inlinehandlers "github.com/GrishaSkurikhin/DivanBot/internal/bot/inline-handlers"
 	messagesender "github.com/GrishaSkurikhin/DivanBot/internal/bot/message-sender"
-	preparemessages "github.com/GrishaSkurikhin/DivanBot/internal/bot/prepare-messages"
+	"github.com/GrishaSkurikhin/DivanBot/internal/bot/sliders"
 	"github.com/GrishaSkurikhin/DivanBot/internal/logger"
 	"github.com/GrishaSkurikhin/DivanBot/internal/models"
-	"github.com/GrishaSkurikhin/DivanBot/pkg/go-telegram/ui/slider"
 	"github.com/go-telegram/bot"
 	botModels "github.com/go-telegram/bot/models"
 )
@@ -25,7 +24,6 @@ func FutureFilms(log logger.BotLogger, futureFilmsGetter FutureFilmsGetter) bot.
 			username = update.Message.From.Username
 			inputMsg = update.Message.Text
 			chatID   = update.Message.Chat.ID
-			userID   = uint64(update.Message.From.ID)
 		)
 
 		films, err := futureFilmsGetter.GetFutureFims()
@@ -35,21 +33,7 @@ func FutureFilms(log logger.BotLogger, futureFilmsGetter FutureFilmsGetter) bot.
 			return
 		}
 
-		slides := make([]slider.Slide, 0, len(films))
-		for _, film := range films {
-			slides = append(slides, slider.Slide{
-				Text:  preparemessages.FilmDescriptionFuture(film),
-				Photo: film.PosterURL,
-			})
-		}
-
-		opts := []slider.Option{
-			slider.OnSelect("Записаться", false, inlinehandlers.RegOnFilm(log, futureFilmsGetter, films, userID)),
-			slider.OnSelect("Место", false, inlinehandlers.ShowLocation(log, films)),
-			slider.OnCancel("Закрыть", true, sliderFutureOnCancel),
-		}
-
-		sl := slider.New(slides, opts...)
+		sl := sliders.FutureFilms(films)
 		_, err = sl.Show(ctx, b, chatID)
 		if err != nil {
 			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
@@ -59,7 +43,3 @@ func FutureFilms(log logger.BotLogger, futureFilmsGetter FutureFilmsGetter) bot.
 		log.BotINFO(handler, username, inputMsg, "successfully")
 	}
 }
-
-func sliderFutureOnCancel(ctx context.Context, b *bot.Bot, message *botModels.Message) {}
-
-func Govno(ctx context.Context, b *bot.Bot, message *botModels.Message, item int) {}

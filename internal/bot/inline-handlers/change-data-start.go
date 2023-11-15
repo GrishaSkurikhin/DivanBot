@@ -2,6 +2,7 @@ package inlinehandlers
 
 import (
 	"context"
+	"strings"
 
 	"github.com/GrishaSkurikhin/DivanBot/internal/bot/dialoger"
 	messagesender "github.com/GrishaSkurikhin/DivanBot/internal/bot/message-sender"
@@ -17,10 +18,11 @@ func ChangeDataStart(log logger.BotLogger, d *dialoger.Dialoger) inlinekeyboard.
 			handler  = "ChangeData"
 			username = query.Message.From.Username
 			chatID   = query.Message.Chat.ID
-			data     = query.Data
+			data     = string(query.Data)
 		)
 
-		startInfo := map[string]string{"dataType": string(data)}
+		data = strings.TrimPrefix(data, "data")
+		startInfo := map[string]string{"dataType": data}
 
 		err := d.StartDialog(ctx, bot, query.Message, dialoger.ChangeDataDialog, chatID, startInfo)
 		if err != nil {

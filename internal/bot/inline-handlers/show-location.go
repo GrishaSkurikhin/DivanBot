@@ -11,13 +11,13 @@ import (
 	botModels "github.com/go-telegram/bot/models"
 )
 
-func ShowLocation(log logger.BotLogger, films []models.Film) slider.OnSelectFunc {
-	return func(ctx context.Context, b *bot.Bot, message *botModels.Message, item int) {
+func ShowLocation(log logger.BotLogger, films []models.Film) slider.OnSelect {
+	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery, item int) {
 		var (
 			handler  = "ShowLocation"
-			username = message.From.Username
-			inputMsg = message.Text
-			chatID   = message.Chat.ID
+			username = query.Message.From.Username
+			inputMsg = query.Message.Text
+			chatID   = query.Message.Chat.ID
 		)
 		loc := films[item].Location
 

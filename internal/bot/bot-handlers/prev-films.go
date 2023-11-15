@@ -2,13 +2,11 @@ package bothandlers
 
 import (
 	"context"
-	"strconv"
 
 	messagesender "github.com/GrishaSkurikhin/DivanBot/internal/bot/message-sender"
-	preparemessages "github.com/GrishaSkurikhin/DivanBot/internal/bot/prepare-messages"
+	"github.com/GrishaSkurikhin/DivanBot/internal/bot/sliders"
 	"github.com/GrishaSkurikhin/DivanBot/internal/logger"
 	"github.com/GrishaSkurikhin/DivanBot/internal/models"
-	"github.com/GrishaSkurikhin/DivanBot/pkg/go-telegram/ui/slider"
 	"github.com/go-telegram/bot"
 	botModels "github.com/go-telegram/bot/models"
 )
@@ -32,20 +30,9 @@ func PrevFilms(log logger.BotLogger, prevFilmsGetter PrevFilmsGetter) bot.Handle
 			log.BotERROR(handler, username, inputMsg, "Failed to get previous films", err)
 			return
 		}
-		slides := make([]slider.Slide, 0, len(films))
-		for _, film := range films {
-			slides = append(slides, slider.Slide{
-				Text:  preparemessages.FilmDescriptionPrev(film),
-				Photo: film.PosterURL,
-			})
-		}
 
-		opts := []slider.Option{
-			slider.OnCancel("Закрыть", true, sliderPrevOnCancel),
-		}
-
-		sl := slider.New(slides, opts...)
-		_, err = sl.Show(ctx, b, strconv.Itoa(int(update.Message.Chat.ID)))
+		sl := sliders.PrevFilms(films)
+		_, err = sl.Show(ctx, b, chatID)
 		if err != nil {
 			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
 			log.BotERROR(handler, username, inputMsg, "Failed to show slider", err)
@@ -54,5 +41,3 @@ func PrevFilms(log logger.BotLogger, prevFilmsGetter PrevFilmsGetter) bot.Handle
 		log.BotINFO(handler, username, inputMsg, "successfully")
 	}
 }
-
-func sliderPrevOnCancel(ctx context.Context, b *bot.Bot, message *botModels.Message) {}

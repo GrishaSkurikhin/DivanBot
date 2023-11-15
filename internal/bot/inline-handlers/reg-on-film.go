@@ -18,13 +18,13 @@ type FilmRegistrator interface {
 	IsExistRegOnFilm(userID uint64, filmID uint64) (bool, error)
 }
 
-func RegOnFilm(log logger.BotLogger, filmRegistrator FilmRegistrator, films []models.Film, userID uint64) slider.OnSelectFunc {
-	return func(ctx context.Context, b *bot.Bot, message *botModels.Message, item int) {
+func RegOnFilm(log logger.BotLogger, filmRegistrator FilmRegistrator, films []models.Film, userID uint64) slider.OnSelect {
+	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery, item int) {
 		var (
 			handler  = "RegOnFilm"
-			username = message.From.Username
-			inputMsg = message.Text
-			chatID   = message.Chat.ID
+			username = query.Message.From.Username
+			inputMsg = query.Message.Text
+			chatID   = query.Message.Chat.ID
 		)
 
 		isReg, err := filmRegistrator.IsUserReg(userID)

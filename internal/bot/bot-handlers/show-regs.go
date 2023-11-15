@@ -5,10 +5,9 @@ import (
 
 	inlinehandlers "github.com/GrishaSkurikhin/DivanBot/internal/bot/inline-handlers"
 	messagesender "github.com/GrishaSkurikhin/DivanBot/internal/bot/message-sender"
-	preparemessages "github.com/GrishaSkurikhin/DivanBot/internal/bot/prepare-messages"
+	"github.com/GrishaSkurikhin/DivanBot/internal/bot/sliders"
 	"github.com/GrishaSkurikhin/DivanBot/internal/logger"
 	"github.com/GrishaSkurikhin/DivanBot/internal/models"
-	"github.com/GrishaSkurikhin/DivanBot/pkg/go-telegram/ui/slider"
 	"github.com/go-telegram/bot"
 	botModels "github.com/go-telegram/bot/models"
 )
@@ -55,21 +54,7 @@ func ShowRegs(log logger.BotLogger, filmsRegsGetter FilmsRegsGetter) bot.Handler
 			return
 		}
 
-		slides := make([]slider.Slide, 0, len(films))
-		for _, film := range films {
-			slides = append(slides, slider.Slide{
-				Text:  preparemessages.FilmDescriptionFuture(film),
-				Photo: film.PosterURL,
-			})
-		}
-
-		opts := []slider.Option{
-			slider.OnSelect("Отменить запись", true, inlinehandlers.CancelRegOnFilm(log, filmsRegsGetter, films, userID)),
-			slider.OnSelect("Место", false, inlinehandlers.ShowLocation(log, films)),
-			slider.OnCancel("Закрыть", true, sliderRegsOnCancel),
-		}
-
-		sl := slider.New(slides, opts...)
+		sl := sliders.RegFilms(films)
 		_, err = sl.Show(ctx, b, chatID)
 		if err != nil {
 			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")

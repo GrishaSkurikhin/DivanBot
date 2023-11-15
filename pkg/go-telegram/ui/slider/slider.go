@@ -2,53 +2,35 @@ package slider
 
 import (
 	"context"
-	"log"
-	"strings"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 )
 
-type OnSelectFunc func(ctx context.Context, b *bot.Bot, message *models.Message, item int)
-type OnCancelFunc func(ctx context.Context, b *bot.Bot, message *models.Message)
-type OnErrorFunc func(err error)
+type OnSelect func(ctx context.Context, b *bot.Bot, query *models.CallbackQuery, item int)
 
 type Slide struct {
-	Photo    string
-	IsUpload bool
-	Text     string
+	Photo string
+	Text  string
 }
 
 var (
-	cmdPrev   = "prev"
-	cmdNext   = "next"
-	cmdNop    = "nop"
-	cmdSelect = "select"
-	cmdCancel = "cancel"
+	cmdPrev = "prev"
+	cmdNext = "next"
+	cmdNop  = "nop"
 )
 
 type Slider struct {
-	prefix string
-	slides []Slide
-
-	selectButtonsText []string
-	onSelect         []OnSelectFunc
-	cancelButtonText string
-	onCancel         OnCancelFunc
-	onError          OnErrorFunc
-
-	deleteOnSelect []bool
-	deleteOnCancel bool
-
-	current           int
-	callbackHandlerID string
+	prefix      string
+	slides      []Slide
+	buttonsText []string
+	buttonsData []string
 }
 
-func New(slides []Slide, opts ...Option) *Slider {
+func New(slides []Slide, prefix string, opts ...Option) *Slider {
 	s := &Slider{
-		prefix:  bot.RandomString(16),
-		slides:  slides,
-		onError: defaultOnError,
+		prefix: prefix,
+		slides: slides,
 	}
 
 	for _, opt := range opts {
@@ -58,14 +40,8 @@ func New(slides []Slide, opts ...Option) *Slider {
 	return s
 }
 
-func defaultOnError(err error) {
-	log.Printf("[TG-UI-SLIDER] [ERROR] %s", err)
-}
-
 func (s *Slider) Show(ctx context.Context, b *bot.Bot, chatID any) (*models.Message, error) {
-	s.callbackHandlerID = b.RegisterHandler(bot.HandlerTypeCallbackQueryData, s.prefix, bot.MatchTypePrefix, s.callback)
-
-	slide := s.slides[s.current]
+	slide := s.slides[0]
 
 	sendParams := &bot.SendPhotoParams{
 		ChatID:      chatID,
@@ -73,13 +49,6 @@ func (s *Slider) Show(ctx context.Context, b *bot.Bot, chatID any) (*models.Mess
 		Caption:     slide.Text,
 		ParseMode:   models.ParseModeMarkdown,
 		ReplyMarkup: s.buildKeyboard(),
-	}
-
-	if slide.IsUpload {
-		sendParams.Photo = &models.InputFileUpload{
-			Filename: "image.png",
-			Data:     strings.NewReader(slide.Photo),
-		}
 	}
 
 	return b.SendPhoto(ctx, sendParams)

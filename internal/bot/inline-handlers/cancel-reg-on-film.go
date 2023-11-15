@@ -15,13 +15,13 @@ type FilmRegDeleter interface {
 	DeleteRegOnFilm(userID uint64, filmID uint64) error
 }
 
-func CancelRegOnFilm(log logger.BotLogger, filmRegDeleter FilmRegDeleter, films []models.Film, userID uint64) slider.OnSelectFunc {
-	return func(ctx context.Context, b *bot.Bot, message *botModels.Message, item int) {
+func CancelRegOnFilm(log logger.BotLogger, filmRegDeleter FilmRegDeleter, films []models.Film, userID uint64) slider.OnSelect {
+	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery, item int) {
 		var (
 			handler  = "CancelRegOnFilm"
-			username = message.From.Username
-			inputMsg = message.Text
-			chatID = message.Chat.ID
+			username = query.Message.From.Username
+			inputMsg = query.Message.Text
+			chatID = query.Message.Chat.ID
 		)
 
 		err := filmRegDeleter.DeleteRegOnFilm(userID, films[item].ID)
