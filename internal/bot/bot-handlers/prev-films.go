@@ -6,7 +6,6 @@ import (
 
 	messagesender "github.com/GrishaSkurikhin/DivanBot/internal/bot/message-sender"
 	preparemessages "github.com/GrishaSkurikhin/DivanBot/internal/bot/prepare-messages"
-	requestinfo "github.com/GrishaSkurikhin/DivanBot/internal/bot/request-info"
 	"github.com/GrishaSkurikhin/DivanBot/internal/logger"
 	"github.com/GrishaSkurikhin/DivanBot/internal/models"
 	"github.com/GrishaSkurikhin/DivanBot/pkg/go-telegram/ui/slider"
@@ -21,13 +20,15 @@ type PrevFilmsGetter interface {
 func PrevFilms(log logger.BotLogger, prevFilmsGetter PrevFilmsGetter) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *botModels.Update) {
 		var (
-			handler            = "PrevFilms"
-			username, inputMsg = requestinfo.Get(update)
+			handler  = "PrevFilms"
+			username = update.Message.From.Username
+			inputMsg = update.Message.Text
+			chatID   = update.Message.Chat.ID
 		)
 
 		films, err := prevFilmsGetter.GetPrevFims()
 		if err != nil {
-			messagesender.Error(ctx, b, update, log, handler, username, inputMsg, "Ошибка")
+			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
 			log.BotERROR(handler, username, inputMsg, "Failed to get previous films", err)
 			return
 		}
@@ -46,7 +47,7 @@ func PrevFilms(log logger.BotLogger, prevFilmsGetter PrevFilmsGetter) bot.Handle
 		sl := slider.New(slides, opts...)
 		_, err = sl.Show(ctx, b, strconv.Itoa(int(update.Message.Chat.ID)))
 		if err != nil {
-			messagesender.Error(ctx, b, update, log, handler, username, inputMsg, "Ошибка")
+			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
 			log.BotERROR(handler, username, inputMsg, "Failed to show slider", err)
 			return
 		}

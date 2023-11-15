@@ -6,7 +6,6 @@ import (
 	inlinehandlers "github.com/GrishaSkurikhin/DivanBot/internal/bot/inline-handlers"
 	messagesender "github.com/GrishaSkurikhin/DivanBot/internal/bot/message-sender"
 	preparemessages "github.com/GrishaSkurikhin/DivanBot/internal/bot/prepare-messages"
-	requestinfo "github.com/GrishaSkurikhin/DivanBot/internal/bot/request-info"
 	"github.com/GrishaSkurikhin/DivanBot/internal/logger"
 	"github.com/GrishaSkurikhin/DivanBot/internal/models"
 	"github.com/GrishaSkurikhin/DivanBot/pkg/go-telegram/ui/slider"
@@ -22,15 +21,16 @@ type FutureFilmsGetter interface {
 func FutureFilms(log logger.BotLogger, futureFilmsGetter FutureFilmsGetter) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *botModels.Update) {
 		var (
-			handler            = "FutureFilms"
-			username, inputMsg = requestinfo.Get(update)
-			chatID             = int(update.Message.Chat.ID)
-			userID             = int(update.Message.From.ID)
+			handler  = "FutureFilms"
+			username = update.Message.From.Username
+			inputMsg = update.Message.Text
+			chatID   = update.Message.Chat.ID
+			userID   = uint64(update.Message.From.ID)
 		)
 
 		films, err := futureFilmsGetter.GetFutureFims()
 		if err != nil {
-			messagesender.Error(ctx, b, update, log, handler, username, inputMsg, "Ошибка")
+			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
 			log.BotERROR(handler, username, inputMsg, "Failed to get previous films", err)
 			return
 		}
@@ -52,7 +52,7 @@ func FutureFilms(log logger.BotLogger, futureFilmsGetter FutureFilmsGetter) bot.
 		sl := slider.New(slides, opts...)
 		_, err = sl.Show(ctx, b, chatID)
 		if err != nil {
-			messagesender.Error(ctx, b, update, log, handler, username, inputMsg, "Ошибка")
+			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
 			log.BotERROR(handler, username, inputMsg, "Failed to show slider", err)
 			return
 		}

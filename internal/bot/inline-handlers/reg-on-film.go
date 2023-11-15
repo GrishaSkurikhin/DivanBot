@@ -4,7 +4,6 @@ import (
 	"context"
 
 	messagesender "github.com/GrishaSkurikhin/DivanBot/internal/bot/message-sender"
-	requestinfo "github.com/GrishaSkurikhin/DivanBot/internal/bot/request-info"
 	customerrors "github.com/GrishaSkurikhin/DivanBot/internal/custom-errors"
 	"github.com/GrishaSkurikhin/DivanBot/internal/logger"
 	"github.com/GrishaSkurikhin/DivanBot/internal/models"
@@ -19,35 +18,37 @@ type FilmRegistrator interface {
 	IsExistRegOnFilm(userID uint64, filmID uint64) (bool, error)
 }
 
-func RegOnFilm(log logger.BotLogger, filmRegistrator FilmRegistrator, films []models.Film, userID int) slider.OnSelectFunc {
+func RegOnFilm(log logger.BotLogger, filmRegistrator FilmRegistrator, films []models.Film, userID uint64) slider.OnSelectFunc {
 	return func(ctx context.Context, b *bot.Bot, message *botModels.Message, item int) {
 		var (
-			handler            = "RegOnFilm"
-			username, inputMsg = requestinfo.Get(&botModels.Update{Message: message})
+			handler  = "RegOnFilm"
+			username = message.From.Username
+			inputMsg = message.Text
+			chatID   = message.Chat.ID
 		)
 
-		isReg, err := filmRegistrator.IsUserReg(uint64(userID))
+		isReg, err := filmRegistrator.IsUserReg(userID)
 		if err != nil {
-			messagesender.Error(ctx, b, &botModels.Update{Message: message}, log, handler, username, inputMsg, "Ошибка")
+			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
 			log.BotERROR(handler, username, inputMsg, "failed to check user reg", err)
 			return
 		}
 
 		if !isReg {
-			messagesender.Info(ctx, b, &botModels.Update{Message: message}, log, handler, username, inputMsg, "Не зарегестрированы")
+			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Не зарегестрированы")
 			log.BotINFO(handler, username, inputMsg, "successfully")
 			return
 		}
 
 		isRegOnFilm, err := filmRegistrator.IsExistRegOnFilm(uint64(userID), films[item].ID)
 		if err != nil {
-			messagesender.Error(ctx, b, &botModels.Update{Message: message}, log, handler, username, inputMsg, "Ошибка")
+			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
 			log.BotERROR(handler, username, inputMsg, "failed to check reg on film", err)
 			return
 		}
 
 		if isRegOnFilm {
-			messagesender.Info(ctx, b, &botModels.Update{Message: message}, log, handler, username, inputMsg, "Вы уже записаны на фильм")
+			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Вы уже записаны на фильм")
 			log.BotINFO(handler, username, inputMsg, "successfully")
 			return
 		}
@@ -55,16 +56,16 @@ func RegOnFilm(log logger.BotLogger, filmRegistrator FilmRegistrator, films []mo
 		err = filmRegistrator.RegOnFilm(uint64(userID), films[item].ID)
 		if err != nil {
 			if _, ok := err.(customerrors.AlreadyRegistered); ok {
-				messagesender.Error(ctx, b, &botModels.Update{Message: message}, log, handler, username, inputMsg, "Вы уже записаны на этот фильм")
+				messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Вы уже записаны на этот фильм")
 				log.BotERROR(handler, username, inputMsg, "failed to reg on film", err)
 			} else {
-				messagesender.Error(ctx, b, &botModels.Update{Message: message}, log, handler, username, inputMsg, "Ошибка")
+				messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
 				log.BotERROR(handler, username, inputMsg, "failed to reg on film", err)
 			}
 			return
 		}
 
-		messagesender.Info(ctx, b, &botModels.Update{Message: message}, log, handler, username, inputMsg,
+		messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg,
 			"Вы успешно записались")
 		log.BotINFO(handler, username, inputMsg, "successfully")
 	}

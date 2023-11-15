@@ -10,15 +10,15 @@ import (
 func MainMenu() *keyboard.Keyboard {
 	return keyboard.New().
 		Row().
-		Button(commands.FutureFilms).
-		Button(commands.PrevFilms).
+		Button(commands.MenuFutureFilms).
+		Button(commands.MenuPrevFilms).
 		Row().
-		Button(commands.ShowRegs).
-		Button(commands.ShowData).
+		Button(commands.MenuShowRegs).
+		Button(commands.MenuShowData).
 		Row().
-		Button(commands.LeaveFeedback).
-		Button(commands.About).
-		Button(commands.Help)
+		Button(commands.MenuLeaveFeedback).
+		Button(commands.MenuAbout).
+		Button(commands.MenuHelp)
 }
 
 func DialogMenu() *keyboard.Keyboard {
@@ -28,11 +28,11 @@ func DialogMenu() *keyboard.Keyboard {
 }
 
 func ChangeData(b *bot.Bot) *inlinekeyboard.Keyboard {
-	return inlinekeyboard.New(b, "data").
+	return inlinekeyboard.New(b).
 		Row().
-		Button("Изменить имя", []byte("name")).
-		Button("Изменить фамилию", []byte("surname")).
-		Button("Изменить группу", []byte("group")).
+		Button("Изменить имя", []byte(commands.ChangeDataName)).
+		Button("Изменить фамилию", []byte(commands.ChangeDataSurname)).
+		Button("Изменить группу", []byte(commands.ChangeDataGroup)).
 		Row().
-		Button("Закрыть", []byte("close"))
+		Button("Закрыть", []byte(commands.ChangeDataCancel))
 }

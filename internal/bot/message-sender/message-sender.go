@@ -8,10 +8,10 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-func Info(ctx context.Context, b *bot.Bot, update *models.Update, log logger.BotLogger,
+func Info(ctx context.Context, b *bot.Bot, chatID int64, log logger.BotLogger,
 	handler, username, inputMsg, info string) {
 	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
+		ChatID: chatID,
 		Text:   info,
 	})
 
@@ -20,10 +20,10 @@ func Info(ctx context.Context, b *bot.Bot, update *models.Update, log logger.Bot
 	}
 }
 
-func InfoWithKeyboard(ctx context.Context, b *bot.Bot, update *models.Update, log logger.BotLogger,
+func InfoWithKeyboard(ctx context.Context, b *bot.Bot, chatID int64, log logger.BotLogger,
 	handler, username, inputMsg, info string, keyboard models.ReplyMarkup) {
 	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:      update.Message.Chat.ID,
+		ChatID:      chatID,
 		Text:        info,
 		ReplyMarkup: keyboard,
 	})
@@ -33,10 +33,10 @@ func InfoWithKeyboard(ctx context.Context, b *bot.Bot, update *models.Update, lo
 	}
 }
 
-func Error(ctx context.Context, b *bot.Bot, update *models.Update, log logger.BotLogger,
+func Error(ctx context.Context, b *bot.Bot, chatID int64, log logger.BotLogger,
 	handler, username, inputMsg, errorMsg string) {
 	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
+		ChatID: chatID,
 		Text:   errorMsg,
 	})
 

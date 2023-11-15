@@ -16,15 +16,15 @@ const (
 	LeaveFeedbackDialog = 2
 )
 
-type DialogHandler func(ctx context.Context, b *bot.Bot, update *models.Update, state int, info map[string]string) (newInfo map[string]string, isErr bool)
+type DialogHandler func(ctx context.Context, b *bot.Bot, msg *models.Message, state int, info map[string]string) (newInfo map[string]string, isErr bool)
 
 type stater interface {
 	RegState(dialogType int)
-	AddState(dialogType int, chatID int) error
-	GetState(dialogType int, chatID int) (int, error) // return -1 if no dialog
-	GetInfo(dialogType int, chatID int) (map[string]string, error)
-	NextState(dialogType int, chatID int, NewInfo map[string]string) error
-	DelState(dialogType int, chatID int) error
+	AddState(dialogType int, chatID int64) error
+	GetState(dialogType int, chatID int64) (int, error) // return -1 if no dialog
+	GetInfo(dialogType int, chatID int64) (map[string]string, error)
+	NextState(dialogType int, chatID int64, NewInfo map[string]string) error
+	DelState(dialogType int, chatID int64) error
 }
 
 type Dialoger struct {
@@ -48,7 +48,7 @@ func (d *Dialoger) AddDialog(dialogType int, handler DialogHandler, statesNum in
 }
 
 // return dialogType and state of this dialog dialog if exist
-func (d *Dialoger) CheckDialog(chatID int) (int, int, error) {
+func (d *Dialoger) CheckDialog(chatID int64) (int, int, error) {
 	for dialogType := range d.dialogs {
 		state, err := d.st.GetState(dialogType, chatID)
 		if err != nil {
@@ -61,7 +61,7 @@ func (d *Dialoger) CheckDialog(chatID int) (int, int, error) {
 	return UnknownDialog, 0, nil
 }
 
-func (d *Dialoger) StartDialog(ctx context.Context, b *bot.Bot, update *models.Update, dialogType int, chatID int, startInfo map[string]string) error {
+func (d *Dialoger) StartDialog(ctx context.Context, b *bot.Bot, msg *models.Message, dialogType int, chatID int64, startInfo map[string]string) error {
 	if _, isExist := d.dialogs[dialogType]; !isExist {
 		return fmt.Errorf("no dialog of this type")
 	}
@@ -72,7 +72,7 @@ func (d *Dialoger) StartDialog(ctx context.Context, b *bot.Bot, update *models.U
 	}
 
 	handler := d.dialogs[dialogType]
-	_, isErr := handler(ctx, b, update, 1, nil)
+	_, isErr := handler(ctx, b, msg, 1, nil)
 
 	if isErr {
 		return nil
@@ -86,10 +86,10 @@ func (d *Dialoger) StartDialog(ctx context.Context, b *bot.Bot, update *models.U
 	return nil
 }
 
-func (d *Dialoger) ServeMessage(ctx context.Context, b *bot.Bot, update *models.Update, dialogType int, state int) error {
+func (d *Dialoger) ServeMessage(ctx context.Context, b *bot.Bot, msg *models.Message, dialogType int, state int) error {
 	var (
-		inputMsg = update.Message.Text
-		chatID   = int(update.Message.Chat.ID)
+		inputMsg = msg.Text
+		chatID   = msg.Chat.ID
 	)
 
 	if _, isExist := d.dialogs[dialogType]; !isExist {
@@ -110,7 +110,7 @@ func (d *Dialoger) ServeMessage(ctx context.Context, b *bot.Bot, update *models.
 	}
 
 	handler := d.dialogs[dialogType]
-	newInfo, isErr := handler(ctx, b, update, state, info)
+	newInfo, isErr := handler(ctx, b, msg, state, info)
 
 	if isErr {
 		return nil
@@ -131,31 +131,3 @@ func (d *Dialoger) ServeMessage(ctx context.Context, b *bot.Bot, update *models.
 
 	return nil
 }
-
-// func DialogTypeIfExist(stater DialogStater, userID int) (bool, int, error) {
-// 	reg, err := stater.GetState(RegDialog, userID)
-// 	if err != nil {
-// 		return false, 0, err
-// 	}
-// 	if reg != 0 {
-// 		return true, RegDialog, nil
-// 	}
-
-// 	changeData, err := stater.GetState(ChangeDataDialog, userID)
-// 	if err != nil {
-// 		return false, 0, err
-// 	}
-// 	if changeData != 0 {
-// 		return true, ChangeDataDialog, nil
-// 	}
-
-// 	leaveFeedback, err := stater.GetState(LeaveFeedbackDialog, userID)
-// 	if err != nil {
-// 		return false, 0, err
-// 	}
-// 	if leaveFeedback != 0 {
-// 		return true, LeaveFeedbackDialog, nil
-// 	}
-
-// 	return false, 0, nil
-// }

@@ -1,8 +1,6 @@
 package bot
 
 import (
-	"context"
-
 	bothandlers "github.com/GrishaSkurikhin/DivanBot/internal/bot/bot-handlers"
 	"github.com/GrishaSkurikhin/DivanBot/internal/bot/commands"
 	dialoghandlers "github.com/GrishaSkurikhin/DivanBot/internal/bot/dialog-handlers"
@@ -13,7 +11,6 @@ import (
 
 	"github.com/GrishaSkurikhin/DivanBot/internal/logger"
 	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
 )
 
 type OperationsStorage interface {
@@ -68,7 +65,10 @@ func New(token string, log logger.BotLogger, operationsStorage OperationsStorage
 	b.RegisterHandler(bot.HandlerTypeMessageText, commands.Help, bot.MatchTypeExact, bothandlers.Help(log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, commands.MenuHelp, bot.MatchTypeExact, bothandlers.Help(log))
 
-	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "dataclose", bot.MatchTypeContains, inlinekeyboard.Callback(func(ctx context.Context, b *bot.Bot, mes *models.Message, data []byte) {}, []byte("close")))
-	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "dataname", bot.MatchTypeContains, inlinekeyboard.Callback(inlinehandlers.ChangeDataStart(log, d), []byte("name")))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, commands.ChangeDataCancel, bot.MatchTypeContains, inlinekeyboard.Callback(inlinehandlers.Cancel(log)))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, commands.ChangeDataName, bot.MatchTypeContains, inlinekeyboard.Callback(inlinehandlers.ChangeDataStart(log, d)))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, commands.ChangeDataSurname, bot.MatchTypeContains, inlinekeyboard.Callback(inlinehandlers.ChangeDataStart(log, d)))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, commands.ChangeDataGroup, bot.MatchTypeContains, inlinekeyboard.Callback(inlinehandlers.ChangeDataStart(log, d)))
+
 	return &telegramBot{b}, nil
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-type OnSelect func(ctx context.Context, bot *bot.Bot, mes *models.Message, data []byte)
+type OnSelect func(ctx context.Context, bot *bot.Bot, query *models.CallbackQuery)
 
 type Keyboard struct {
 	prefix            string
@@ -17,9 +17,8 @@ type Keyboard struct {
 	markup            [][]models.InlineKeyboardButton
 }
 
-func New(b *bot.Bot, prefix string) *Keyboard {
+func New(b *bot.Bot) *Keyboard {
 	return &Keyboard{
-		prefix: prefix,
 		markup: [][]models.InlineKeyboardButton{{}},
 		data:   [][]byte{},
 	}
