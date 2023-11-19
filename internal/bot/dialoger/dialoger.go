@@ -18,22 +18,21 @@ const (
 
 type DialogHandler func(ctx context.Context, b *bot.Bot, msg *models.Message, state int, info map[string]string) (newInfo map[string]string, isErr bool)
 
-type stater interface {
-	RegState(dialogType int)
+type Stater interface {
 	AddState(dialogType int, chatID int64) error
-	GetState(dialogType int, chatID int64) (int, error) // return -1 if no dialog
+	GetState(dialogType int, chatID int64) (int, error)
 	GetInfo(dialogType int, chatID int64) (map[string]string, error)
 	NextState(dialogType int, chatID int64, NewInfo map[string]string) error
 	DelState(dialogType int, chatID int64) error
 }
 
 type Dialoger struct {
-	st               stater
+	st               Stater
 	dialogs          map[int]DialogHandler // dialogType -> dialog handler
 	dialogsStatesNum map[int]int           // dialogType -> dialog states num
 }
 
-func New(st stater) *Dialoger {
+func New(st Stater) *Dialoger {
 	return &Dialoger{
 		st:               st,
 		dialogs:          make(map[int]DialogHandler),
@@ -44,7 +43,6 @@ func New(st stater) *Dialoger {
 func (d *Dialoger) AddDialog(dialogType int, handler DialogHandler, statesNum int) {
 	d.dialogs[dialogType] = handler
 	d.dialogsStatesNum[dialogType] = statesNum
-	d.st.RegState(dialogType)
 }
 
 // return dialogType and state of this dialog dialog if exist

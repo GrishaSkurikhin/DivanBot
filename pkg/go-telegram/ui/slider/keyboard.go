@@ -10,9 +10,9 @@ func (s *Slider) buildKeyboard() models.InlineKeyboardMarkup {
 	kb := models.InlineKeyboardMarkup{
 		InlineKeyboard: [][]models.InlineKeyboardButton{
 			{
-				{Text: "\u00AB", CallbackData: s.prefix + cmdPrev},
-				{Text: strconv.Itoa(1) + "/" + strconv.Itoa(len(s.slides)), CallbackData: s.prefix + cmdNop},
-				{Text: "\u00BB", CallbackData: s.prefix + cmdNext},
+				{Text: "\u00AB", CallbackData: s.prefix +cmdPrev},
+				{Text: strconv.Itoa(1) + "/" + strconv.Itoa(len(s.slides)), CallbackData: s.slides[0].ID},
+				{Text: "\u00BB", CallbackData: s.prefix +cmdNext},
 			},
 		},
 	}

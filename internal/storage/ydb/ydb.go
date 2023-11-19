@@ -163,56 +163,78 @@ func (ydb *yandexDatabase) ChangeUserData(dataType string, newValue string, user
 	return ydb.CUDoperations(ctx, query, params)
 }
 
-func (ydb *yandexDatabase) IsExistRegOnFilm(userID uint64, filmID uint64) (bool, error) {
+func (ydb *yandexDatabase) IsExistRegOnFilm(userID uint64, filmID string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), operationDeadline)
 	defer cancel()
 
 	query := `DECLARE $userID AS Uint64;
-	DECLARE $filmID AS Uint64;
+	DECLARE $filmID AS String;
 	SELECT EXISTS(SELECT user_tg_id FROM Registrations 
 	WHERE user_tg_id = $userID AND film_id =  $filmID)`
 
 	params := table.NewQueryParameters(
 		table.ValueParam("$userID", types.Uint64Value(userID)),
-		table.ValueParam("$filmID", types.Uint64Value(filmID)),
+		table.ValueParam("$filmID", types.BytesValueFromString(filmID)),
 	)
 
 	info, err := ydb.selectSingleValue(ctx, query, params)
 	return info.(bool), err
 }
 
-func (ydb *yandexDatabase) RegOnFilm(userID uint64, filmID uint64) error {
+func (ydb *yandexDatabase) RegOnFilm(userID uint64, filmID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), operationDeadline)
 	defer cancel()
 
 	query := `DECLARE $UserID AS Uint64;
-	DECLARE $FilmID AS Uint64;
+	DECLARE $FilmID AS String;
 	UPSERT INTO Registrations ( user_tg_id, film_id )
 	VALUES ( $UserID, $FilmID );`
 
 	params := table.NewQueryParameters(
 		table.ValueParam("$UserID", types.Uint64Value(userID)),
-		table.ValueParam("$FilmID", types.Uint64Value(filmID)),
+		table.ValueParam("$FilmID", types.BytesValueFromString(filmID)),
 	)
 
 	return ydb.CUDoperations(ctx, query, params)
 }
 
-func (ydb *yandexDatabase) DeleteRegOnFilm(userID uint64, filmID uint64) error {
+func (ydb *yandexDatabase) DeleteRegOnFilm(userID uint64, filmID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), operationDeadline)
 	defer cancel()
 
 	query := `DECLARE $UserID AS Uint64;
-	DECLARE $FilmID AS Uint64;
+	DECLARE $FilmID AS String;
 	DELETE FROM Registrations
 	WHERE user_tg_id = $UserID AND film_id = $FilmID;`
 
 	params := table.NewQueryParameters(
 		table.ValueParam("$UserID", types.Uint64Value(userID)),
-		table.ValueParam("$FilmID", types.Uint64Value(filmID)),
+		table.ValueParam("$FilmID", types.BytesValueFromString(filmID)),
 	)
 
 	return ydb.CUDoperations(ctx, query, params)
+}
+
+func (ydb *yandexDatabase) GetLocation(filmID string) (models.Location, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), operationDeadline)
+	defer cancel()
+
+	query := `DECLARE $FilmID AS String;
+	SELECT
+	l.title as title,
+	l.description as description,
+	l.latitude as latitude,
+	l.longitude as longitude,
+	l.video_url as video_url
+	FROM Locations AS l
+	JOIN Films AS f ON f.location_id = l.id
+	WHERE f.id = $FilmID`
+
+	params := table.NewQueryParameters(
+		table.ValueParam("$FilmID", types.BytesValueFromString(filmID)),
+	)
+
+	return ydb.selectLocation(ctx, query, params)
 }
 
 func (ydb *yandexDatabase) GetFilmsRegs(userID uint64) ([]models.Film, error) {
@@ -362,6 +384,53 @@ func (ydb *yandexDatabase) selectSingleValue(ctx context.Context, query string, 
 	return value, err
 }
 
+func (ydb *yandexDatabase) selectLocation(ctx context.Context, query string, params *table.QueryParameters) (models.Location, error) {
+	location := models.Location{}
+
+	readTx := table.TxControl(table.BeginTx(table.WithOnlineReadOnly()), table.CommitTx())
+	err := ydb.conn.Table().Do(ctx,
+		func(ctx context.Context, s table.Session) error {
+			var (
+				title       *string
+				description *string
+				latitude    float64
+				longitude   float64
+				video_url   *string
+			)
+			_, res, err := s.Execute(ctx, readTx, query, params)
+			if err != nil {
+				return fmt.Errorf("execute error: %v", err)
+			}
+			defer res.Close()
+
+			if res.NextResultSet(ctx) {
+				if res.NextRow() {
+					err = res.ScanNamed(
+						named.Optional("title", &title),
+						named.Optional("description", &description),
+						named.Required("latitude", &latitude),
+						named.Required("longitude", &longitude),
+						named.Optional("video_url", &video_url),
+					)
+					if err != nil {
+						return fmt.Errorf("scan error: %v", err)
+					}
+				}
+			}
+			if res.Err() != nil {
+				return res.Err()
+			}
+			location.Title = *title
+			location.Description = *description
+			location.Lat = latitude
+			location.Long = longitude
+			location.VideoURL = *video_url
+			return nil
+		},
+	)
+	return location, err
+}
+
 func (ydb *yandexDatabase) selectFilms(ctx context.Context, query string, params *table.QueryParameters) ([]models.Film, error) {
 	films := []models.Film{}
 
@@ -391,7 +460,7 @@ func (ydb *yandexDatabase) selectFilms(ctx context.Context, query string, params
 
 func scanFilm(res result.Result) (models.Film, error) {
 	var (
-		film_id              uint64
+		film_id              *string
 		film_name            *string
 		film_description     *string
 		film_show_date       *time.Time
@@ -406,7 +475,7 @@ func scanFilm(res result.Result) (models.Film, error) {
 	)
 
 	err := res.ScanNamed(
-		named.Required("film_id", &film_id),
+		named.Optional("film_id", &film_id),
 		named.Optional("film_name", &film_name),
 		named.Optional("film_description", &film_description),
 		named.Optional("film_show_date", &film_show_date),
@@ -424,7 +493,7 @@ func scanFilm(res result.Result) (models.Film, error) {
 	}
 
 	return models.Film{
-		ID:          film_id,
+		ID:          *film_id,
 		Name:        *film_name,
 		Description: *film_description,
 		ShowDate:    *film_show_date,

@@ -6,20 +6,19 @@ import (
 	messagesender "github.com/GrishaSkurikhin/DivanBot/internal/bot/message-sender"
 	customerrors "github.com/GrishaSkurikhin/DivanBot/internal/custom-errors"
 	"github.com/GrishaSkurikhin/DivanBot/internal/logger"
-	"github.com/GrishaSkurikhin/DivanBot/internal/models"
 	"github.com/GrishaSkurikhin/DivanBot/pkg/go-telegram/ui/slider"
 	"github.com/go-telegram/bot"
 	botModels "github.com/go-telegram/bot/models"
 )
 
 type FilmRegistrator interface {
-	RegOnFilm(userID uint64, filmID uint64) error
+	RegOnFilm(userID uint64, filmID string) error
 	IsUserReg(userID uint64) (bool, error)
-	IsExistRegOnFilm(userID uint64, filmID uint64) (bool, error)
+	IsExistRegOnFilm(userID uint64, filmID string) (bool, error)
 }
 
-func RegOnFilm(log logger.BotLogger, filmRegistrator FilmRegistrator, films []models.Film, userID uint64) slider.OnSelect {
-	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery, item int) {
+func RegOnFilm(log logger.BotLogger, filmRegistrator FilmRegistrator) slider.OnSelect {
+	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery, slideID string) {
 		var (
 			handler  = "RegOnFilm"
 			username = query.Message.From.Username
@@ -27,7 +26,7 @@ func RegOnFilm(log logger.BotLogger, filmRegistrator FilmRegistrator, films []mo
 			chatID   = query.Message.Chat.ID
 		)
 
-		isReg, err := filmRegistrator.IsUserReg(userID)
+		isReg, err := filmRegistrator.IsUserReg(uint64(chatID))
 		if err != nil {
 			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
 			log.BotERROR(handler, username, inputMsg, "failed to check user reg", err)
@@ -40,7 +39,7 @@ func RegOnFilm(log logger.BotLogger, filmRegistrator FilmRegistrator, films []mo
 			return
 		}
 
-		isRegOnFilm, err := filmRegistrator.IsExistRegOnFilm(uint64(userID), films[item].ID)
+		isRegOnFilm, err := filmRegistrator.IsExistRegOnFilm(uint64(chatID), slideID)
 		if err != nil {
 			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
 			log.BotERROR(handler, username, inputMsg, "failed to check reg on film", err)
@@ -53,7 +52,7 @@ func RegOnFilm(log logger.BotLogger, filmRegistrator FilmRegistrator, films []mo
 			return
 		}
 
-		err = filmRegistrator.RegOnFilm(uint64(userID), films[item].ID)
+		err = filmRegistrator.RegOnFilm(uint64(chatID), slideID)
 		if err != nil {
 			if _, ok := err.(customerrors.AlreadyRegistered); ok {
 				messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Вы уже записаны на этот фильм")

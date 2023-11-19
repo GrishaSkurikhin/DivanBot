@@ -6,13 +6,16 @@ const (
 	ChangeDataSurname = "datasurname"
 	ChangeDataGroup = "datagroup"
 
-	PrevFilmsCancel = "prevcancel"
+	PrevFilmsPrefix = "prevf"
+	PrevFilmsCancel = "cancel"
 
-	FutureFilmsCancel = "futurecancel"
-	FutureFilmsReg = "futurereg"
-	FutureFilmsLocation = "futurelocation"
+	FutureFilmsPrefix = "futuref"
+	FutureFilmsCancel = "cancel"
+	FutureFilmsReg = "reg"
+	FutureFilmsLocation = "location"
 
-	UserFilmsCancel = "userfilmscancel"
-	UserFilmsCancelReg = "userfilmscancelreg"
-	UserFilmsLocation = "userfilmslocation"
+	UserFilmsPrefix = "userfilms"
+	UserFilmsCancel = "cancel"
+	UserFilmsCancelReg = "cancelreg"
+	UserFilmsLocation = "location"
 )

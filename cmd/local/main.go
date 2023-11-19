@@ -30,7 +30,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	b, err := bot.New(conf.Token, log, ydb)
+	b, err := bot.New(conf.Token, log, ydb, ydb)
 	if err != nil {
 		log.StdFATAL("failed to create bot", err)
 		os.Exit(1)

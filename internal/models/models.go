@@ -3,7 +3,7 @@ package models
 import "time"
 
 type Film struct {
-	ID          uint64
+	ID          string
 	Name        string
 	Description string
 	ShowDate    time.Time

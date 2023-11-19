@@ -11,17 +11,26 @@ import (
 	botModels "github.com/go-telegram/bot/models"
 )
 
-func ShowLocation(log logger.BotLogger, films []models.Film) slider.OnSelect {
-	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery, item int) {
+type LocationGetter interface {
+	GetLocation(filmID string) (models.Location, error)
+}
+
+func ShowLocation(log logger.BotLogger, locationGetter LocationGetter) slider.OnSelect {
+	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery, slideID string) {
 		var (
 			handler  = "ShowLocation"
 			username = query.Message.From.Username
 			inputMsg = query.Message.Text
 			chatID   = query.Message.Chat.ID
 		)
-		loc := films[item].Location
+		loc, err := locationGetter.GetLocation(slideID)
+		if err != nil {
+			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
+			log.BotERROR(handler, username, inputMsg, "Failed to get location", err)
+			return
+		}
 
-		_, err := b.SendVenue(ctx, &bot.SendVenueParams{
+		_, err = b.SendVenue(ctx, &bot.SendVenueParams{
 			ChatID:    chatID,
 			Latitude:  loc.Lat,
 			Longitude: loc.Long,

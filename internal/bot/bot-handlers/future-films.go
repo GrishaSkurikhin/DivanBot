@@ -5,6 +5,7 @@ import (
 
 	inlinehandlers "github.com/GrishaSkurikhin/DivanBot/internal/bot/inline-handlers"
 	messagesender "github.com/GrishaSkurikhin/DivanBot/internal/bot/message-sender"
+
 	"github.com/GrishaSkurikhin/DivanBot/internal/bot/sliders"
 	"github.com/GrishaSkurikhin/DivanBot/internal/logger"
 	"github.com/GrishaSkurikhin/DivanBot/internal/models"

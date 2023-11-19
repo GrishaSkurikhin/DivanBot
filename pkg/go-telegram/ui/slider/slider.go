@@ -7,9 +7,11 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-type OnSelect func(ctx context.Context, b *bot.Bot, query *models.CallbackQuery, item int)
+type OnSelect func(ctx context.Context, b *bot.Bot, query *models.CallbackQuery, slideID string)
+type GetNewSlides func(ctx context.Context, b *bot.Bot, query *models.CallbackQuery) (slides []Slide)
 
 type Slide struct {
+	ID    string
 	Photo string
 	Text  string
 }
@@ -17,7 +19,6 @@ type Slide struct {
 var (
 	cmdPrev = "prev"
 	cmdNext = "next"
-	cmdNop  = "nop"
 )
 
 type Slider struct {
