@@ -8,6 +8,7 @@ import (
 	dialoghandlers "github.com/GrishaSkurikhin/DivanBot/internal/bot/dialog-handlers"
 	"github.com/GrishaSkurikhin/DivanBot/internal/bot/dialoger"
 	inlinehandlers "github.com/GrishaSkurikhin/DivanBot/internal/bot/inline-handlers"
+	"github.com/GrishaSkurikhin/DivanBot/internal/bot/middlewares"
 	inlinekeyboard "github.com/GrishaSkurikhin/DivanBot/pkg/go-telegram/ui/inline-keyboard"
 	"github.com/GrishaSkurikhin/DivanBot/pkg/go-telegram/ui/slider"
 
@@ -40,6 +41,7 @@ func New(token string, log logger.BotLogger, operationsStorage OperationsStorage
 	d.AddDialog(dialoger.ChangeDataDialog, dialoghandlers.ChangeData(log, operationsStorage), 2)
 
 	opts := []bot.Option{
+		bot.WithMiddlewares(middlewares.CheckDialog(log, d)),
 		bot.WithDefaultHandler(bothandlers.Default(log, d)),
 	}
 

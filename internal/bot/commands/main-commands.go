@@ -15,3 +15,31 @@ const (
 	LeaveFeedback = "/feedback"
 	About = "/about"
 )
+
+func Commands() map[string]struct{} {
+	return map[string]struct{} {
+		Start: {},
+		Help: {},
+		RegUser: {},
+		FutureFilms: {},
+		PrevFilms: {},
+		ShowRegs: {},
+		ShowData: {},
+		LeaveFeedback: {},
+		About: {},
+		MenuFutureFilms: {},
+		MenuPrevFilms: {},
+		MenuShowRegs: {},
+		MenuShowData: {},
+		MenuLeaveFeedback: {},
+		MenuAbout: {},
+		MenuHelp: {},
+		ChangeDataName: {},
+		ChangeDataSurname: {},
+		ChangeDataGroup: {},
+		FutureFilmsPrefix + FutureFilmsReg: {},
+		FutureFilmsPrefix + FutureFilmsLocation: {},
+		UserFilmsPrefix + UserFilmsCancelReg: {},
+		UserFilmsPrefix + UserFilmsLocation: {},
+	}
+}

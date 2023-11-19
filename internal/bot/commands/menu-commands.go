@@ -13,3 +13,15 @@ const (
 
 	Cancel  = "Отмена"
 )
+
+func MenuCommands() map[string]struct{} {
+	return map[string]struct{} {
+		MenuFutureFilms: {},
+		MenuPrevFilms: {},
+		MenuShowRegs: {},
+		MenuShowData: {},
+		MenuLeaveFeedback: {},
+		MenuAbout: {},
+		MenuHelp: {},
+	}
+}
