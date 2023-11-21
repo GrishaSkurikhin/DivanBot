@@ -7,25 +7,20 @@ import (
 	messagesender "github.com/GrishaSkurikhin/DivanBot/internal/bot/message-sender"
 	"github.com/GrishaSkurikhin/DivanBot/internal/logger"
 	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
+	botModels "github.com/go-telegram/bot/models"
 )
 
-const (
-	startInfo = `
-Добро пожаловать!
-`
-)
-
-func Start(log logger.BotLogger) bot.HandlerFunc {
-	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
+func MainMenu(log logger.BotLogger) bot.HandlerFunc {
+	return func(ctx context.Context, b *bot.Bot, update *botModels.Update) {
 		var (
-			handler  = "Start"
+			handler  = "MainMenu"
 			username = update.Message.From.Username
 			inputMsg = update.Message.Text
-			chatID = update.Message.Chat.ID
+			chatID   = update.Message.Chat.ID
 		)
 
-		messagesender.InfoWithKeyboard(ctx, b, chatID, log, handler, username, inputMsg, startInfo, keyboards.MainMenu())
+		messagesender.InfoWithKeyboard(ctx, b, chatID, log, handler, username, inputMsg,
+			"Главное меню", keyboards.MainMenu())
 		log.BotINFO(handler, username, inputMsg, "successfully")
 	}
 }

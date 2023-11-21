@@ -30,6 +30,11 @@ func PrevFilms(log logger.BotLogger, prevFilmsGetter PrevFilmsGetter) bot.Handle
 			log.BotERROR(handler, username, inputMsg, "Failed to get previous films", err)
 			return
 		}
+		if len(films) == 0 {
+			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Пока не было показано ни одного фильма")
+			log.BotINFO(handler, username, inputMsg, "successfully")
+			return
+		}
 
 		sl := sliders.PrevFilms(films)
 		_, err = sl.Show(ctx, b, chatID)

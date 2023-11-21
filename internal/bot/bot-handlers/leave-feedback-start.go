@@ -32,7 +32,7 @@ func LeaveFeedbackStart(log logger.BotLogger, d *dialoger.Dialoger, isUserRegChe
 		}
 
 		if !isReg {
-			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Не зарегестрированы")
+			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Вы не зарегистрированы. Для регистрации введите /reg")
 			log.BotINFO(handler, username, inputMsg, "successfully")
 			return
 		}

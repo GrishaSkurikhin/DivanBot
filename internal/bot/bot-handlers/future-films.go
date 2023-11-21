@@ -30,7 +30,12 @@ func FutureFilms(log logger.BotLogger, futureFilmsGetter FutureFilmsGetter) bot.
 		films, err := futureFilmsGetter.GetFutureFims()
 		if err != nil {
 			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")
-			log.BotERROR(handler, username, inputMsg, "Failed to get previous films", err)
+			log.BotERROR(handler, username, inputMsg, "Failed to get future films", err)
+			return
+		}
+		if len(films) == 0 {
+			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Пока нет запланированных фильмов")
+			log.BotINFO(handler, username, inputMsg, "successfully")
 			return
 		}
 

@@ -36,7 +36,7 @@ func ShowRegs(log logger.BotLogger, filmsRegsGetter FilmsRegsGetter) bot.Handler
 		}
 
 		if !isReg {
-			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Не зарегестрированы")
+			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Вы не зарегистрированы. Для регистрации введите /reg")
 			log.BotINFO(handler, username, inputMsg, "successfully")
 			return
 		}
@@ -49,7 +49,7 @@ func ShowRegs(log logger.BotLogger, filmsRegsGetter FilmsRegsGetter) bot.Handler
 		}
 
 		if len(films) == 0 {
-			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Не записей на фильмы")
+			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "У вас нет записей на фильмы")
 			log.BotINFO(handler, username, inputMsg, "successfully")
 			return
 		}
@@ -64,5 +64,3 @@ func ShowRegs(log logger.BotLogger, filmsRegsGetter FilmsRegsGetter) bot.Handler
 		log.BotINFO(handler, username, inputMsg, "successfully")
 	}
 }
-
-func sliderRegsOnCancel(ctx context.Context, b *bot.Bot, message *botModels.Message) {}

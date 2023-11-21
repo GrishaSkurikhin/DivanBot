@@ -258,7 +258,8 @@ func (ydb *yandexDatabase) GetFilmsRegs(userID uint64) ([]models.Film, error) {
 	FROM Films AS f
 	JOIN Locations AS l ON f.location_id = l.id
 	JOIN Registrations AS r ON f.id = r.film_id
-	WHERE r.user_tg_id = $UserID`
+	WHERE r.user_tg_id = $UserID
+	ORDER BY film_show_date`
 
 	params := table.NewQueryParameters(
 		table.ValueParam("$UserID", types.Uint64Value(userID)),
@@ -286,7 +287,8 @@ func (ydb *yandexDatabase) GetPrevFims() ([]models.Film, error) {
 	l.video_url as location_video_url
 	FROM Films AS f
 	JOIN Locations AS l ON f.location_id = l.id
-	WHERE f.show_date < CurrentUtcDatetime()`
+	WHERE f.show_date < CurrentUtcDatetime()
+	ORDER BY film_show_date`
 
 	return ydb.selectFilms(ctx, query, nil)
 }
@@ -310,7 +312,8 @@ func (ydb *yandexDatabase) GetFutureFims() ([]models.Film, error) {
 	l.video_url as location_video_url
 	FROM Films AS f
 	JOIN Locations AS l ON f.location_id = l.id
-	WHERE f.show_date > CurrentUtcDatetime()`
+	WHERE f.show_date > CurrentUtcDatetime()
+	ORDER BY film_show_date`
 
 	return ydb.selectFilms(ctx, query, nil)
 }

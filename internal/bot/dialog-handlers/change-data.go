@@ -28,7 +28,8 @@ func ChangeData(log logger.BotLogger, userDataChanger UserDataChanger) dialoger.
 
 		switch state {
 		case 1:
-			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Введите новое значение")
+			messagesender.InfoWithKeyboard(ctx, b, chatID, log, handler, username, inputMsg, 
+				"Введите новое значение", keyboards.DialogMenu())
 		case 2:
 			dataType := info["dataType"]
 			data := inputMsg

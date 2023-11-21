@@ -14,6 +14,7 @@ const (
 
 	LeaveFeedback = "/feedback"
 	About = "/about"
+	MainMenu = "/menu"
 )
 
 func Commands() map[string]struct{} {
@@ -27,6 +28,7 @@ func Commands() map[string]struct{} {
 		ShowData: {},
 		LeaveFeedback: {},
 		About: {},
+		MainMenu: {},
 		MenuFutureFilms: {},
 		MenuPrevFilms: {},
 		MenuShowRegs: {},

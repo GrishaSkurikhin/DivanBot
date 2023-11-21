@@ -83,6 +83,7 @@ func registrateStandartHandlers(b *bot.Bot, log logger.BotLogger, operationsStor
 	b.RegisterHandler(bot.HandlerTypeMessageText, commands.LeaveFeedback, bot.MatchTypeExact, bothandlers.LeaveFeedbackStart(log, d, operationsStorage))
 	b.RegisterHandler(bot.HandlerTypeMessageText, commands.About, bot.MatchTypeExact, bothandlers.About(log, operationsStorage))
 	b.RegisterHandler(bot.HandlerTypeMessageText, commands.Help, bot.MatchTypeExact, bothandlers.Help(log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, commands.MainMenu, bot.MatchTypeExact, bothandlers.MainMenu(log))
 }
 
 func registrateMenuHandlers(b *bot.Bot, log logger.BotLogger, operationsStorage OperationsStorage, d *dialoger.Dialoger) {

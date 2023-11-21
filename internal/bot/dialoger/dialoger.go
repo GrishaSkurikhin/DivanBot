@@ -20,7 +20,7 @@ type DialogHandler func(ctx context.Context, b *bot.Bot, msg *models.Message, st
 
 type Stater interface {
 	AddState(dialogType int, chatID int64) error
-	GetState(dialogType int, chatID int64) (int, error)
+	GetState(chatID int64) (int, int, error)
 	GetInfo(dialogType int, chatID int64) (map[string]string, error)
 	NextState(dialogType int, chatID int64, NewInfo map[string]string) error
 	DelState(dialogType int, chatID int64) error
@@ -47,15 +47,14 @@ func (d *Dialoger) AddDialog(dialogType int, handler DialogHandler, statesNum in
 
 // return dialogType and state of this dialog dialog if exist
 func (d *Dialoger) CheckDialog(chatID int64) (int, int, error) {
-	for dialogType := range d.dialogs {
-		state, err := d.st.GetState(dialogType, chatID)
-		if err != nil {
-			return UnknownDialog, 0, fmt.Errorf("failed to get state: %v", err)
-		}
-		if state != 0 {
-			return dialogType, state, nil
-		}
+	dialogType, state, err := d.st.GetState(chatID)
+	if err != nil {
+		return UnknownDialog, 0, fmt.Errorf("failed to get state: %v", err)
 	}
+	if state != 0 {
+		return dialogType, state, nil
+	}
+
 	return UnknownDialog, 0, nil
 }
 

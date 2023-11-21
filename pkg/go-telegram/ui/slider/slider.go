@@ -8,7 +8,7 @@ import (
 )
 
 type OnSelect func(ctx context.Context, b *bot.Bot, query *models.CallbackQuery, slideID string)
-type GetNewSlides func(ctx context.Context, b *bot.Bot, query *models.CallbackQuery) (slides []Slide)
+type GetNewSlides func(ctx context.Context, b *bot.Bot, query *models.CallbackQuery) ([]Slide,error)
 
 type Slide struct {
 	ID    string

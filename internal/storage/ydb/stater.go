@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/result/named"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
 )
 
@@ -33,25 +34,43 @@ func (ydb *yandexDatabase) AddState(dialogType int, chatID int64) error {
 	return ydb.CUDoperations(ctx, query, params)
 }
 
-func (ydb *yandexDatabase) GetState(dialogType int, chatID int64) (int, error) {
+func (ydb *yandexDatabase) GetState(chatID int64) (int, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), operationDeadline)
 	defer cancel()
 
 	query := `DECLARE $ChatID AS Uint64;
-	DECLARE $DialogType AS int64;
-	SELECT state FROM States
-	WHERE chat_id = $ChatID AND dialog_type = $DialogType;`
+	SELECT dialog_type, state FROM States
+	WHERE chat_id = $ChatID;`
 
 	params := table.NewQueryParameters(
 		table.ValueParam("ChatID", types.Uint64Value(uint64(chatID))),
-		table.ValueParam("DialogType", types.Int64Value(int64(dialogType))),
 	)
 
-	state, err := ydb.selectSingleValue(ctx, query, params)
-	if state == nil {
-		return 0, err
-	}
-	return int(state.(int64)), err
+	var dialogType, state int64
+	readTx := table.TxControl(table.BeginTx(table.WithOnlineReadOnly()), table.CommitTx())
+	err := ydb.conn.Table().Do(ctx,
+		func(ctx context.Context, s table.Session) (err error) {
+			_, res, err := s.Execute(ctx, readTx, query, params)
+			if err != nil {
+				return fmt.Errorf("execute error: %v", err)
+			}
+			defer res.Close()
+
+			if res.NextResultSet(ctx) {
+				if res.NextRow() {
+					err := res.ScanNamed(
+						named.Required("dialog_type", &dialogType),
+						named.Required("state", &state),
+					)
+					if err != nil {
+						return fmt.Errorf("scan res error: %v", err)
+					}
+				}
+			}
+			return res.Err()
+		},
+	)
+	return int(dialogType), int(state), err
 }
 
 func (ydb *yandexDatabase) GetInfo(dialogType int, chatID int64) (map[string]string, error) {
@@ -89,7 +108,7 @@ func (ydb *yandexDatabase) NextState(dialogType int, chatID int64, NewInfo map[s
 	for name, val := range NewInfo {
 		info[name] = val
 	}
-	
+
 	infoJson, err := json.Marshal(info)
 	if err != nil {
 		return fmt.Errorf("failed to marshal info: %v", err)

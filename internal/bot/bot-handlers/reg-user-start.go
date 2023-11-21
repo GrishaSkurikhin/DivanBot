@@ -28,7 +28,7 @@ func RegUserStart(log logger.BotLogger, d *dialoger.Dialoger, isUserRegChecker I
 		}
 
 		if isReg {
-			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Уже зарегистрированы")
+			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Вы уже зарегистрированы")
 			log.BotINFO(handler, username, inputMsg, "successfully")
 			return
 		}

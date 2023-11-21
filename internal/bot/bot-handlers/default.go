@@ -14,6 +14,11 @@ import (
 
 func Default(log logger.BotLogger, d *dialoger.Dialoger) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *botModels.Update) {
+		if update.CallbackQuery != nil {
+			b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{CallbackQueryID: update.CallbackQuery.ID})
+			return
+		}
+
 		var (
 			handler  = "Default"
 			username = update.Message.From.Username

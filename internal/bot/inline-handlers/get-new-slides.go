@@ -23,13 +23,13 @@ type FilmsRegsGetter interface {
 }
 
 func GetPrevFilmsSlides(prevFilmsGetter PrevFilmsGetter) slider.GetNewSlides {
-	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery) (slides []slider.Slide) {
+	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery) ([]slider.Slide, error) {
 		films, err := prevFilmsGetter.GetPrevFims()
 		if err != nil {
-			return
+			return nil, err
 		}
 
-		slides = make([]slider.Slide, 0, len(films))
+		slides := make([]slider.Slide, 0, len(films))
 		for _, film := range films {
 			slides = append(slides, slider.Slide{
 				ID: film.ID,
@@ -37,18 +37,18 @@ func GetPrevFilmsSlides(prevFilmsGetter PrevFilmsGetter) slider.GetNewSlides {
 				Photo: film.PosterURL,
 			})
 		}
-		return
+		return slides,  nil
 	}
 }
 
 func GetFutureFilmsSlides(futureFilmsGetter FutureFilmsGetter) slider.GetNewSlides {
-	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery) (slides []slider.Slide) {
+	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery) ([]slider.Slide, error) {
 		films, err := futureFilmsGetter.GetFutureFims()
 		if err != nil {
-			return
+			return nil, err
 		}
 
-		slides = make([]slider.Slide, 0, len(films))
+		slides := make([]slider.Slide, 0, len(films))
 		for _, film := range films {
 			slides = append(slides, slider.Slide{
 				ID: film.ID,
@@ -56,19 +56,19 @@ func GetFutureFilmsSlides(futureFilmsGetter FutureFilmsGetter) slider.GetNewSlid
 				Photo: film.PosterURL,
 			})
 		}
-		return
+		return slides, nil
 	}
 }
 
 func GetUserFilmsSlides(filmsRegsGetter FilmsRegsGetter) slider.GetNewSlides {
-	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery) (slides []slider.Slide) {
+	return func(ctx context.Context, b *bot.Bot, query *botModels.CallbackQuery) ([]slider.Slide, error) {
 		userID := uint64(query.Message.Chat.ID)
 		films, err := filmsRegsGetter.GetFilmsRegs(userID)
 		if err != nil {
-			return
+			return nil, err
 		}
 
-		slides = make([]slider.Slide, 0, len(films))
+		slides := make([]slider.Slide, 0, len(films))
 		for _, film := range films {
 			slides = append(slides, slider.Slide{
 				ID: film.ID,
@@ -76,6 +76,6 @@ func GetUserFilmsSlides(filmsRegsGetter FilmsRegsGetter) slider.GetNewSlides {
 				Photo: film.PosterURL,
 			})
 		}
-		return
+		return slides, nil
 	}
 }

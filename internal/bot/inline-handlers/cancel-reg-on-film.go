@@ -22,7 +22,8 @@ func CancelRegOnFilm(log logger.BotLogger, filmRegDeleter FilmRegDeleter) slider
 			inputMsg = query.Message.Text
 			chatID   = query.Message.Chat.ID
 		)
-
+		
+		
 		err := filmRegDeleter.DeleteRegOnFilm(uint64(chatID), slideID)
 		if err != nil {
 			messagesender.Error(ctx, b, chatID, log, handler, username, inputMsg, "Ошибка")

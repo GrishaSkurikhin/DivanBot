@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -24,9 +25,9 @@ func callbackAnswer(ctx context.Context, b *bot.Bot, callbackQuery *models.Callb
 
 func Callback(handler OnSelect, isDelete bool, getNewSlides GetNewSlides) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
-		newSlides := getNewSlides(ctx, b, update.CallbackQuery)
-		if newSlides == nil {
-			fmt.Printf("error get new slides")
+		newSlides, err := getNewSlides(ctx, b, update.CallbackQuery)
+		if err != nil {
+			fmt.Printf("error get new slides: %v", err)
 			callbackAnswer(ctx, b, update.CallbackQuery)
 			return
 		}
@@ -41,11 +42,12 @@ func Callback(handler OnSelect, isDelete bool, getNewSlides GetNewSlides) bot.Ha
 				callbackAnswer(ctx, b, update.CallbackQuery)
 				return
 			}
+			callbackAnswer(ctx, b, update.CallbackQuery)
+			return
 		}
 
 		item := int([]byte(update.CallbackQuery.Message.ReplyMarkup.InlineKeyboard[0][1].Text)[0] - '1')
 		if item > len(newSlides)-1 {
-			fmt.Println("-1")
 			updateSlider(ctx, b, update.CallbackQuery, newSlides, 0, len(newSlides))
 			callbackAnswer(ctx, b, update.CallbackQuery)
 			return
@@ -120,6 +122,9 @@ func updateSlider(ctx context.Context, b *bot.Bot, query *models.CallbackQuery, 
 
 	_, errEdit := b.EditMessageMedia(ctx, editParams)
 	if errEdit != nil {
+		if strings.Contains(errEdit.Error(), "message is not modified") {
+			return
+		}
 		fmt.Printf("error edit message in callback, %v", errEdit)
 	}
 }
