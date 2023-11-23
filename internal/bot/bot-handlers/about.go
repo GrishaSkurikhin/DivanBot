@@ -19,7 +19,7 @@ func About(log logger.BotLogger, aboutInfoGetter AboutInfoGetter) bot.HandlerFun
 			handler  = "About"
 			username = update.Message.From.Username
 			inputMsg = update.Message.Text
-			chatID = update.Message.Chat.ID
+			chatID   = update.Message.Chat.ID
 		)
 
 		info, err := aboutInfoGetter.GetAboutInfo()
@@ -29,7 +29,12 @@ func About(log logger.BotLogger, aboutInfoGetter AboutInfoGetter) bot.HandlerFun
 			return
 		}
 
-		messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, info)
+		_, err = b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID:    chatID,
+			Text:      info,
+			ParseMode: botModels.ParseModeHTML,
+		})
+
 		log.BotINFO(handler, username, inputMsg, "successfully")
 	}
 }

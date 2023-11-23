@@ -37,7 +37,7 @@ type telegramBot struct {
 func New(token string, log logger.BotLogger, operationsStorage OperationsStorage, st dialoger.Stater) (*telegramBot, error) {
 	d := dialoger.New(st)
 	d.AddDialog(dialoger.LeaveFeedbackDialog, dialoghandlers.LeaveFeedback(log, operationsStorage), 2)
-	d.AddDialog(dialoger.RegDialog, dialoghandlers.RegUser(log, operationsStorage), 4)
+	d.AddDialog(dialoger.RegDialog, dialoghandlers.RegUser(log, operationsStorage), 5)
 	d.AddDialog(dialoger.ChangeDataDialog, dialoghandlers.ChangeData(log, operationsStorage), 2)
 
 	opts := []bot.Option{

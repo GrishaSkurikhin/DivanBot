@@ -22,11 +22,12 @@ type Location struct {
 }
 
 type User struct {
-	TgID     uint64
-	Username string
-	Name     string
-	Surname  string
-	Group    string
+	TgID      uint64
+	Username  string
+	Name      string
+	Surname   string
+	Group     string
+	WhereFind string
 }
 
 type State struct {

@@ -115,7 +115,7 @@ func updateSlider(ctx context.Context, b *bot.Bot, query *models.CallbackQuery, 
 		Media: &models.InputMediaPhoto{
 			Media:     slides[currSlide].Photo,
 			Caption:   slides[currSlide].Text,
-			ParseMode: models.ParseModeMarkdown,
+			ParseMode: models.ParseModeHTML,
 		},
 		ReplyMarkup: reply,
 	}

@@ -38,12 +38,16 @@ func RegUser(log logger.BotLogger, userRegistrator UserRegistrator) dialoger.Dia
 			newInfo["surname"] = inputMsg
 			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, "Введите группу")
 		case 4:
+			newInfo["group"] = inputMsg
+			messagesender.Info(ctx, b, chatID, log, handler, username, inputMsg, `Осталось еще чуть-чуть. Введите, пожалуйста, откуда вы про нас узнали. Если не хотите отвечать, просто отправьте "-"`)
+		case 5:
 			user := models.User{
 				TgID:     userID,
 				Username: username,
 				Name:     info["name"],
 				Surname:  info["surname"],
-				Group:    inputMsg,
+				Group: info["group"],    
+				WhereFind: inputMsg,
 			}
 			err := userRegistrator.RegUser(user)
 			if err != nil {
@@ -55,6 +59,7 @@ func RegUser(log logger.BotLogger, userRegistrator UserRegistrator) dialoger.Dia
 			messagesender.InfoWithKeyboard(ctx, b, chatID, log, handler, username, inputMsg,
 				"Вы успешно зарегестрированы", keyboards.MainMenu())
 		}
+	
 
 		log.BotINFO(handler, username, inputMsg, "successfully")
 		return

@@ -65,8 +65,9 @@ func (ydb *yandexDatabase) RegUser(user models.User) error {
 	DECLARE $Name AS Utf8;
 	DECLARE $Surname AS Utf8;
 	DECLARE $Group AS Utf8;
-	UPSERT INTO Users ( tg_id, username, name, surname, group )
-	VALUES ( $UserID, $Username, $Name, $Surname, $Group );`
+	DECLARE $WhereFind AS Utf8;
+	UPSERT INTO Users ( tg_id, username, name, surname, group, where_find )
+	VALUES ( $UserID, $Username, $Name, $Surname, $Group, $WhereFind );`
 
 	params := table.NewQueryParameters(
 		table.ValueParam("$UserID", types.Uint64Value(user.TgID)),
@@ -74,6 +75,7 @@ func (ydb *yandexDatabase) RegUser(user models.User) error {
 		table.ValueParam("$Name", types.UTF8Value(user.Name)),
 		table.ValueParam("$Surname", types.UTF8Value(user.Surname)),
 		table.ValueParam("$Group", types.UTF8Value(user.Group)),
+		table.ValueParam("$WhereFind", types.UTF8Value(user.WhereFind)),
 	)
 
 	return ydb.CUDoperations(ctx, query, params)

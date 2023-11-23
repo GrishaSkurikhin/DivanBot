@@ -5,15 +5,14 @@ import (
 	"time"
 
 	"github.com/GrishaSkurikhin/DivanBot/internal/models"
-	"github.com/go-telegram/bot"
 )
 
 func FilmDescriptionPrev(film models.Film) string {
-	return fmt.Sprintf("🎬 *%s*\n\n%s\n\n📅 %s\n📍 %s",
-		bot.EscapeMarkdownUnescaped(film.Name),
-		bot.EscapeMarkdownUnescaped(film.Description),
+	return fmt.Sprintf("🎬 <strong>%s</strong>\n\n%s\n\n📅 %s\n📍 %s",
+		film.Name,
+		film.Description,
 		getDate(film.ShowDate),
-		bot.EscapeMarkdownUnescaped(film.Location.Title),
+		film.Location.Title,
 	)
 }
 
@@ -25,11 +24,11 @@ func FilmDescriptionFuture(film models.Film) string {
 		isCloseInfo = "🔴 Регистрация закрыта"
 	}
 
-	return fmt.Sprintf("🎬 *%s*\n\n%s\n\n📅 %s\n📍 %s\n 👥 Всего мест: %d\n%s",
-		bot.EscapeMarkdownUnescaped(film.Name),
-		bot.EscapeMarkdownUnescaped(film.Description),
+	return fmt.Sprintf("🎬 %s\n\n%s\n\n📅 %s\n📍 %s\n 👥 Всего мест: %d\n%s",
+		film.Name,
+		film.Description,
 		getDate(film.ShowDate),
-		bot.EscapeMarkdownUnescaped(film.Location.Title),
+		film.Location.Title,
 		film.PlacesNum,
 		isCloseInfo,
 	)

@@ -48,7 +48,7 @@ func (s *Slider) Show(ctx context.Context, b *bot.Bot, chatID any) (*models.Mess
 		ChatID:      chatID,
 		Photo:       &models.InputFileString{Data: slide.Photo},
 		Caption:     slide.Text,
-		ParseMode:   models.ParseModeMarkdown,
+		ParseMode:   models.ParseModeHTML,
 		ReplyMarkup: s.buildKeyboard(),
 	}
 
