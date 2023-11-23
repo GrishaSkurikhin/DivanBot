@@ -36,6 +36,7 @@
 Для хранения информации была выбрана база данных Yandex Database, потому что она также предоставляет возможность serverless-вычислений.
 
 Схема БД:
+
 ![бот - схема бд](https://github.com/GrishaSkurikhin/DivanBot/assets/71190776/65cec956-c4ff-4944-8008-322b11ea334b)
 
 ## Доработки пакета go-telegram
